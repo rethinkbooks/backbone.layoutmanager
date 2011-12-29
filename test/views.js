@@ -20,6 +20,14 @@ module("views", {
         return { text: "Right" };
       }
     });
+
+    this.NestedSubView = Backbone.LayoutManager.View.extend({
+      template: "#test-sub",
+
+      serialize: function() {
+        return { text: "Nested" };
+      }
+    });
   }
 });
 
@@ -60,14 +68,16 @@ asyncTest("render inside defined partial", function() {
 });
 
 asyncTest("re-render a view defined after initialization", function(){
+  var trimmed;
   var main = new Backbone.LayoutManager({
     template: "#main"
-  }), trimmed;
+  });
 
   main.view(".right", new this.View({ msg: "Right" }));
 
   main.render(function(contents) {
-    $('#container').html(contents);
+    $("#container").html(contents);
+
     start();
   });
   
@@ -79,7 +89,7 @@ asyncTest("re-render a view defined after initialization", function(){
   main.views[".right"].render();
   trimmed = $.trim( $("#container .inner-left").html() );
   equal(trimmed, "Right Again", "Correct re-render");
-})
+});
 
 asyncTest("nested views", function() {
   var main = new Backbone.LayoutManager({
@@ -104,4 +114,34 @@ asyncTest("nested views", function() {
 
     start();
   });
+});
+
+asyncTest("re-render a nested view", function(){
+  var trimmed;
+  var main = new Backbone.LayoutManager({
+    template: "#main"
+  });
+
+  main.view(".right", new this.View({
+    msg: "Right",
+    
+    views: {
+      ".inner-right": new this.NestedSubView({ msg: ")
+    }
+  }));
+
+  main.render(function(contents) {
+    $("#container").html(contents);
+
+    start();
+  });
+  
+  main.views[".right"].render();
+  trimmed = $.trim( $("#container .inner-left").html() );
+  equal(trimmed, "Right", "Correct re-render");
+  
+  main.view(".right", new this.View({ msg: "Right Again" }));
+  main.views[".right"].render();
+  trimmed = $.trim( $("#container .inner-left").html() );
+  equal(trimmed, "Right Again", "Correct re-render");
 });

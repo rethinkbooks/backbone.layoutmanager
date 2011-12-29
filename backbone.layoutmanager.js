@@ -153,6 +153,12 @@ var LayoutManager = Backbone.LayoutManager = Backbone.View.extend({
 
           // If the view contains a views object, iterate over it as well
           if (_.isObject(view.options.views)) {
+            // Attach an object to store the subViews
+            view.views = {};
+            view.view = function(name, view) {
+              return view.views[name] = view;
+            };
+
             return renderViews(view, view.options.views);
           }
         });
@@ -166,6 +172,9 @@ var LayoutManager = Backbone.LayoutManager = Backbone.View.extend({
     function renderViews(root, views) {
       // For each view access the view object and partial name
       _.each(views, function(view, name) {
+        // Attach to sub views collection
+        root.views[name] = view;
+
         // The original render method
         var original = view.render;
 
@@ -179,7 +188,7 @@ var LayoutManager = Backbone.LayoutManager = Backbone.View.extend({
     
     view.render = wrappedRender(manager, name, view);
     
-    this.views[name] = view;
+    return this.views[name] = view;
   },
 
   render: function(done) {
