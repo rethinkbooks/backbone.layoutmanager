@@ -17,6 +17,7 @@ var $ = window.$;
 function cleanViews(views) {
   // Clear out all existing views
   _.each(_.isArray(views) ? views : [views], function(view) {
+    if (view.__manager__.isAppended) return;
     // Ensure the Element is scrubbed of all jQuery events and data
     view.remove();
     // Remove all custom events attached to this View
@@ -51,7 +52,9 @@ function viewRender(root) {
 
     // Render the View into the el property.
     if (contents) {
-      options.html(root.el, options.render(contents, context));
+      if (!_.isFunction(root.replaceWithTemplate) || root.replaceWithTemplate()) {
+        options.html(root.el, options.render(contents, context));
+      }
     }
 
     // Resolve partials with the View element.
@@ -307,6 +310,8 @@ var LayoutManager = Backbone.View.extend({
     if (append) {
       partials = this.views[name] = this.views[name] || [];
       partials.push(view);
+
+      view.__manager__.isAppended = true;
 
       return view;
     }
