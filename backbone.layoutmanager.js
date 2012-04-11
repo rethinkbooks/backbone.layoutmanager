@@ -62,6 +62,10 @@ function viewRender(root) {
   }
 
   return {
+    view: function(view) {
+      return root.view("", view);
+    },
+
     // Shorthand to root.view function with append flag
     insert: function(partial, view) {
       if (view) {
